@@ -11,3 +11,16 @@ git clone git@github.com/omarrayyann/KAN-Conv2D
 cd KAN-Conv2D
 pip install -r requirements.txt
 ```
+
+# USAGE
+```python3
+
+from ConvKAN import ConvKAN
+
+# Implementation built on the efficient KAN (https://github.com/KindXiaoming/pykan)
+conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.ORIGINAL)
+
+# Implementation built on the original KAN (https://github.com/KindXiaoming/pykan)
+conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.ORIGINAL)
+
+```
