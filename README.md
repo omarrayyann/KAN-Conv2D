@@ -2,8 +2,8 @@
 
 This repositry contains 2 drop-in convolutional KAN replacements. Each work on top of a different KAN implementation:
 
-1. [Efficient implementation of Kolmogorov-Arnold Network (KAN)](https://github.com/Blealtan/efficient-kan) using ```ConvKAN.Version.ORIGINAL```
-2. [Original KAN implementation](https://github.com/KindXiaoming/pykan) using ```ConvKAN.Version.EFFICIENT```
+1. [Efficient implementation of Kolmogorov-Arnold Network (KAN)](https://github.com/Blealtan/efficient-kan)
+2. [Original KAN implementation](https://github.com/KindXiaoming/pykan)
 
 # Installation
 ```bash
@@ -21,9 +21,9 @@ You should be able to just replace ```torch.nn.Conv2D()``` with ```ConvKAN()```
 from ConvKAN import ConvKAN
 
 # Implementation built on the efficient KAN (https://github.com/Blealtan/efficient-kan)
-conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.EFFICIENT)
+conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version="Efficient")
 
 # Implementation built on the original KAN (https://github.com/KindXiaoming/pykan)
-conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.ORIGINAL)
+conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version="Original")
 
 ```
