@@ -61,7 +61,7 @@ class Original_KANLinear(nn.Module):
             unlock already locked activation functions
     """
 
-    def __init__(self, in_dim=3, out_dim=2, num=5, k=3, noise_scale=0.1, scale_base=1.0, scale_sp=1.0, base_fun=torch.nn.SiLU(), grid_eps=0.02, grid_range=[-1, 1], sp_trainable=True, sb_trainable=True, device='cpu'):
+    def __init__(self, in_dim=3, out_dim=2, num=5, k=3, noise_scale=0.1, scale_base=1.0, scale_sp=1.0, base_fun=torch.nn.SiLU(), grid_eps=0.02, grid_range=[-1, 1], sp_trainable=True, sb_trainable=True, device='cpu',full_output=False):
         ''''
         initialize a KANLayer
         
@@ -111,6 +111,7 @@ class Original_KANLinear(nn.Module):
         self.in_dim = in_dim
         self.num = num
         self.k = k
+        self.full_output = full_output
 
         # shape: (size, num)
         self.grid = torch.einsum('i,j->ij', torch.ones(size, device=device), torch.linspace(grid_range[0], grid_range[1], steps=num + 1, device=device))
@@ -179,8 +180,11 @@ class Original_KANLinear(nn.Module):
         # y shape: (batch, out_dim); preacts shape: (batch, in_dim, out_dim)
         # postspline shape: (batch, in_dim, out_dim); postacts: (batch, in_dim, out_dim)
         # postspline is for extension; postacts is for visualization
-        return y, preacts, postacts, postspline
-
+        if self.full_output:
+            return y, preacts, postacts, postspline
+        else:
+            return y
+        
     def update_grid_from_samples(self, x):
         '''
         update grid from samples

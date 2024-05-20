@@ -73,6 +73,7 @@ class ConvKAN(nn.Module):
                 sp_trainable=sp_trainable, 
                 sb_trainable=sb_trainable,
                 device=device,
+                full_output = False,
                 ) 
 
     def forward(self, x):  
@@ -99,10 +100,7 @@ class ConvKAN(nn.Module):
         # Apply the linear layer to each patch.
         # Input:  [batch_size*num_patches, in_channels*kernel_size*kernel_size]
         # Output: [batch_size*num_patches, out_channels
-        if self.version == "Original":
-            out, _, _, _ = self.linear(patches)
-        elif self.version == "Efficient":
-            out = self.linear(patches)
+        out = self.linear(patches)
 
         # Reshape the output to the normal format
         # Input:  [batch_size*num_patches, out_channels]
