@@ -9,10 +9,6 @@ sys.path.append("KAN_Implementations/Original_KAN")
 from efficient_kan import Efficient_KANLinear
 from original_kan import Original_KANLinear
 
-class Version(Enum):
-    ORIGINAL = 1
-    EFFICIENT = 2
-
 class ConvKAN(nn.Module):
     
     def __init__(self, 
@@ -33,7 +29,7 @@ class ConvKAN(nn.Module):
                 sp_trainable=True, 
                 sb_trainable=True,
                 device="cpu",
-                version: Version = Version.EFFICIENT,
+                version= "Efficient",
                 ):
         super(ConvKAN, self).__init__()
 
@@ -48,7 +44,7 @@ class ConvKAN(nn.Module):
 
         self.linear = None
         
-        if self.version == self.Version.EFFICIENT:
+        if self.version == "Efficient":
             self.linear = Efficient_KANLinear(
                 in_features = in_channels * kernel_size * kernel_size,
                 out_features = out_channels,
@@ -63,7 +59,7 @@ class ConvKAN(nn.Module):
                 grid_range=grid_range,
                 ) 
             warnings.warn('Warning: Efficient KAN implementation does not support the following parameters: [sp_trainable, sb_trainable, device]') 
-        elif self.version == self.Version.ORIGINAL:
+        elif self.version == "Original":
             self.linear = Original_KANLinear(
                 in_dim = in_channels * kernel_size * kernel_size,
                 out_dim = out_channels,
@@ -103,9 +99,9 @@ class ConvKAN(nn.Module):
         # Apply the linear layer to each patch.
         # Input:  [batch_size*num_patches, in_channels*kernel_size*kernel_size]
         # Output: [batch_size*num_patches, out_channels
-        if self.version == Version.ORIGINAL:
+        if self.version == "Original":
             out, _, _, _ = self.linear(patches)
-        elif self.version == Version.EFFICIENT:
+        elif self.version == "Efficient":
             out = self.linear(patches)
 
         # Reshape the output to the normal format
@@ -128,5 +124,3 @@ class ConvKAN(nn.Module):
         out = out.view(batch_size, self.out_channels, out_height, out_width) 
         
         return out
-
-ConvKAN.Version = Version
