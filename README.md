@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 # Usage
 
-You should be able to drop-in replace ```torch.nn.Conv2D()``` with ```ConvKAN()```
+You should be able to just replace ```torch.nn.Conv2D()``` with ```ConvKAN()```
 
 ```python3
 
