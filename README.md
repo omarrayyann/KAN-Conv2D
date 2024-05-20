@@ -12,7 +12,10 @@ cd KAN-Conv2D
 pip install -r requirements.txt
 ```
 
-# USAGE
+# Usage
+
+You should be able to drop-in replace ```torch.nn.Conv2D()``` with ```ConvKAN()```
+
 ```python3
 
 from ConvKAN import ConvKAN
