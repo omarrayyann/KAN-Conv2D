@@ -1,4 +1,4 @@
-# Convolutional 2D KAN
+# Convolutional 2D KAN Implementation
 
 This repositry contains 2 drop-in convolutional KAN replacements. Each work on top of a different KAN implementation:
 
