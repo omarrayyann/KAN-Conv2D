@@ -21,7 +21,7 @@ You should be able to just replace ```torch.nn.Conv2D()``` with ```ConvKAN()```
 from ConvKAN import ConvKAN
 
 # Implementation built on the efficient KAN (https://github.com/KindXiaoming/pykan)
-conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.ORIGINAL)
+conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.EFFICIENT)
 
 # Implementation built on the original KAN (https://github.com/KindXiaoming/pykan)
 conv = ConvKAN(in_channels=3, out_channels=4, kernel_size=3, stride=1, padding=1, version=ConvKAN.Version.ORIGINAL)
