@@ -1,100 +1,8 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import transforms
-from PIL import Image
 import math
 
-class ConvKAN(nn.Module):
-    def __init__(self, 
-                in_channels, 
-                out_channels, 
-                kernel_size, 
-                stride=1, 
-                padding=0, 
-                grid_size=5,
-                spline_order=3,
-                scale_noise=0.1,
-                scale_base=1.0,
-                scale_spline=1.0,
-                enable_standalone_scale_spline=True,
-                base_activation=torch.nn.SiLU,
-                grid_eps=0.02,
-                grid_range=[-1, 1]
-                ):
-        super(ConvKAN, self).__init__()
-
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        
-        self.unfold = nn.Unfold(kernel_size, padding=padding, stride=stride)
-        self.linear = KANLinear(
-            in_features = in_channels * kernel_size * kernel_size,
-            out_features = out_channels,
-            grid_size=grid_size,
-            spline_order=spline_order,
-            scale_noise=scale_noise,
-            scale_base=scale_base,
-            scale_spline=scale_spline,
-            enable_standalone_scale_spline=enable_standalone_scale_spline,
-            base_activation=base_activation,
-            grid_eps=grid_eps,
-            grid_range=grid_range,
-            )
-
-    def forward(self, x):  
-
-        batch_size, in_channels, height, width = x.size()
-        assert x.dim() == 4
-        assert in_channels == self.in_channels
-
-        # Unfold the input tensor to extract flattened sliding blocks from a batched input tensor.
-        # Input:  [batch_size, in_channels, height, width]
-        # Output: [batch_size, in_channels*kernel_size*kernel_size, num_patches]
-        patches = self.unfold(x)
-
-        # Transpose to have the patches dimension last.
-        # Input:  [batch_size, in_channels*kernel_size*kernel_size, num_patches]
-        # Output: [batch_size, num_patches, in_channels*kernel_size*kernel_size]
-        patches = patches.transpose(1, 2) 
-        
-        # Reshape the patches to fit the linear layer input requirements.
-        # Input:  [batch_size, num_patches, in_channels*kernel_size*kernel_size]
-        # Output: [batch_size*num_patches, in_channels*kernel_size*kernel_size]
-        patches = patches.reshape(-1, in_channels * self.kernel_size * self.kernel_size) 
-        
-        # Apply the linear layer to each patch.
-        # Input:  [batch_size*num_patches, in_channels*kernel_size*kernel_size]
-        # Output: [batch_size*num_patches, out_channels]
-        out = self.linear(patches)
-        
-        # Reshape the output to the normal format
-        # Input:  [batch_size*num_patches, out_channels]
-        # Output: [batch_size, num_patches, out_channels]
-        out = out.view(batch_size, -1, out.size(-1))  
-        
-        # Calculate the height and width of the output.
-        out_height = (height + 2*self.padding - self.kernel_size) // self.stride + 1
-        out_width = (width + 2*self.padding - self.kernel_size) // self.stride + 1
-        
-        # Transpose back to have the channel dimension in the second position.
-        # Input:  [batch_size, num_patches, out_channels]
-        # Output: [batch_size, out_channels, num_patches]
-        out = out.transpose(1, 2)
-        
-        # Reshape the output to the final shape 
-        # Input:  [batch_size, out_channels, num_patches]
-        # Output: [batch_size, out_channels, out_height, out_width]
-        out = out.view(batch_size, self.out_channels, out_height, out_width) 
-        
-        return out
-    
-# An Efficient Implementation of Kolmogorov-Arnold Network: https://github.com/Blealtan/efficient-kan
-
-class KANLinear(torch.nn.Module):
+class Efficient_KANLinear(torch.nn.Module):
     def __init__(
         self,
         in_features,
@@ -109,7 +17,7 @@ class KANLinear(torch.nn.Module):
         grid_eps=0.02,
         grid_range=[-1, 1],
     ):
-        super(KANLinear, self).__init__()
+        super(Efficient_KANLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.grid_size = grid_size
@@ -139,7 +47,7 @@ class KANLinear(torch.nn.Module):
         self.scale_base = scale_base
         self.scale_spline = scale_spline
         self.enable_standalone_scale_spline = enable_standalone_scale_spline
-        self.base_activation = base_activation()
+        self.base_activation = base_activation
         self.grid_eps = grid_eps
 
         self.reset_parameters()
@@ -325,52 +233,4 @@ class KANLinear(torch.nn.Module):
         return (
             regularize_activation * regularization_loss_activation
             + regularize_entropy * regularization_loss_entropy
-        )
-
-
-class KAN(torch.nn.Module):
-    def __init__(
-        self,
-        layers_hidden,
-        grid_size=5,
-        spline_order=3,
-        scale_noise=0.1,
-        scale_base=1.0,
-        scale_spline=1.0,
-        base_activation=torch.nn.SiLU,
-        grid_eps=0.02,
-        grid_range=[-1, 1],
-    ):
-        super(KAN, self).__init__()
-        self.grid_size = grid_size
-        self.spline_order = spline_order
-
-        self.layers = torch.nn.ModuleList()
-        for in_features, out_features in zip(layers_hidden, layers_hidden[1:]):
-            self.layers.append(
-                KANLinear(
-                    in_features,
-                    out_features,
-                    grid_size=grid_size,
-                    spline_order=spline_order,
-                    scale_noise=scale_noise,
-                    scale_base=scale_base,
-                    scale_spline=scale_spline,
-                    base_activation=base_activation,
-                    grid_eps=grid_eps,
-                    grid_range=grid_range,
-                )
-            )
-
-    def forward(self, x: torch.Tensor, update_grid=False):
-        for layer in self.layers:
-            if update_grid:
-                layer.update_grid(x)
-            x = layer(x)
-        return x
-
-    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0):
-        return sum(
-            layer.regularization_loss(regularize_activation, regularize_entropy)
-            for layer in self.layers
         )
