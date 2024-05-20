@@ -3,7 +3,6 @@ import torch.nn as nn
 import numpy as np
 from spline import *
 
-
 class Original_KANLinear(nn.Module):
     """
     KANLayer class
