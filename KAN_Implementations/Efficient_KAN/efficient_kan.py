@@ -1,3 +1,6 @@
+# Efficient KAN Implementation
+# From: https://github.com/Blealtan/efficient-kan
+
 import torch
 import torch.nn.functional as F
 import math

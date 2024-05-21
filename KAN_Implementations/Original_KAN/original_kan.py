@@ -1,3 +1,6 @@
+# Original KAN Implementation
+# From: https://github.com/KindXiaoming/pykan
+
 import torch
 import torch.nn as nn
 import numpy as np

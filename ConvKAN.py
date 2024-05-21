@@ -6,8 +6,10 @@ from enum import Enum
 import warnings
 sys.path.append("KAN_Implementations/Efficient_KAN")
 sys.path.append("KAN_Implementations/Original_KAN")
+sys.path.append("KAN_Implementations/Fast_KAN")
 from efficient_kan import Efficient_KANLinear
 from original_kan import Original_KANLinear
+from fast_kan import Fast_KANLinear
 
 class ConvKAN(nn.Module):
     
@@ -75,7 +77,20 @@ class ConvKAN(nn.Module):
                 device=device,
                 full_output = False,
                 ) 
+        elif self.version == "Fast":
+            self.linear = Fast_KANLinear(
+                input_dim = in_channels * kernel_size * kernel_size,
+                output_dim = out_channels,
+                num_grids=grid_size,
+                spline_weight_init_scale=scale_spline,
+                base_activation=base_activation,
+                grid_min = grid_range[0],
+                grid_max = grid_range[1],
+                ) 
+            warnings.warn('Warning: Fast KAN implementation does not support the following parameters: [scale_noise, scale_base, enable_standalone_scale_spline, grid_eps, sp_trainable, sb_trainable, device]') 
 
+
+            
     def forward(self, x):  
 
         batch_size, in_channels, height, width = x.size()
