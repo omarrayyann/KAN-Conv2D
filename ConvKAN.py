@@ -8,7 +8,7 @@ sys.path.append("KAN_Implementations/Efficient_KAN")
 sys.path.append("KAN_Implementations/Original_KAN")
 sys.path.append("KAN_Implementations/Fast_KAN")
 from efficient_kan import Efficient_KANLinear
-from original_kan import Original_KANLinear
+from original_kan import KAN
 from fast_kan import Fast_KANLinear
 
 class ConvKAN(nn.Module):
@@ -30,6 +30,8 @@ class ConvKAN(nn.Module):
                 grid_range=[-1, 1],
                 sp_trainable=True, 
                 sb_trainable=True,
+                bias_trainable=True,
+                symbolic_enabled=True,
                 device="cpu",
                 version= "Efficient",
                 ):
@@ -62,21 +64,22 @@ class ConvKAN(nn.Module):
                 ) 
             warnings.warn('Warning: Efficient KAN implementation does not support the following parameters: [sp_trainable, sb_trainable, device]') 
         elif self.version == "Original":
-            self.linear = Original_KANLinear(
-                in_dim = in_channels * kernel_size * kernel_size,
-                out_dim = out_channels,
-                num=grid_size,
-                noise_scale=scale_noise,
-                scale_base=scale_base,
-                scale_sp=scale_spline,
-                base_fun=base_activation,
-                grid_eps=grid_eps,
-                grid_range=grid_range,
-                sp_trainable=sp_trainable, 
-                sb_trainable=sb_trainable,
-                device=device,
-                full_output = False,
-                ) 
+            self.linear = KAN(
+               width = [in_channels * kernel_size * kernel_size, out_channels],
+               grid = grid_size,
+               k = spline_order,
+               noise_scale = scale_noise,
+               noise_scale_base = scale_base,
+                base_fun = base_activation,
+                symbolic_enabled=symbolic_enabled,
+                bias_trainable = bias_trainable,
+                grid_eps = grid_eps,
+                grid_range = grid_range,
+                sp_trainable = sp_trainable,
+                sb_trainable = sb_trainable,
+                device = device,
+         )
+               
         elif self.version == "Fast":
             self.linear = Fast_KANLinear(
                 input_dim = in_channels * kernel_size * kernel_size,
@@ -116,7 +119,7 @@ class ConvKAN(nn.Module):
         # Input:  [batch_size*num_patches, in_channels*kernel_size*kernel_size]
         # Output: [batch_size*num_patches, out_channels
         out = self.linear(patches)
-
+        
         # Reshape the output to the normal format
         # Input:  [batch_size*num_patches, out_channels]
         # Output: [batch_size, num_patches, out_channels]
